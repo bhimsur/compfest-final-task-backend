@@ -15,13 +15,14 @@ type Roles string
 const (
 	admin      Roles = "admin"
 	donor      Roles = "donor"
-	fundraiser Roles = "rundraiser"
+	fundraiser Roles = "fundraiser"
 )
 
 type Status string
 
 const (
 	verified   Status = "verified"
+	pending    Status = "pending"
 	unverified Status = "unverified"
 )
 
@@ -33,7 +34,7 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Role     Roles  `gorm:"type:Roles" json:"role"`
-	Status   Status `gorm:"type:Status; default:'unverified'" json:"status,omitempty"`
+	Status   Status `gorm:"type:Status; default:'pending'" json:"status,omitempty"`
 }
 
 // hash password from user input
