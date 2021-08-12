@@ -39,8 +39,9 @@ func (a *App) Initialize(DbHost, DbPort, DbUser, DbName, DbPassword string) {
 func (a *App) initializeRoutes() {
 	a.Router.Use(middlewares.SetContentTypeMiddleware)
 	a.Router.HandleFunc("/", home).Methods("GET")
-	a.Router.HandleFunc("/register", a.UserSignUp).Methods("POST")
-	a.Router.HandleFunc("/login", a.Login).Methods("POST")
+	u := a.Router.PathPrefix("/auth").Subrouter()
+	u.HandleFunc("/register", a.UserSignUp).Methods("POST")
+	u.HandleFunc("/login", a.Login).Methods("POST")
 
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
