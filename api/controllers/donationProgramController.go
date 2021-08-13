@@ -16,12 +16,19 @@ func (a *App) CreateDonationProgram(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("UserID").(float64)
 	userStatus := r.Context().Value("Status").(string)
+	userRole := r.Context().Value("Role").(string)
 
-	if userStatus != "verified" {
+	if userRole != "fundraiser" {
 		resp["status"] = false
-		resp["message"] = "Only verified fundraiser can create donation program"
+		resp["message"] = "Only fundraiser can create donation program"
 		responses.JSON(w, http.StatusBadRequest, resp)
 		return
+	} else {
+		if userStatus != "verified" {
+			resp["message"] = "Only verified fundraiser can create donation program"
+			responses.JSON(w, http.StatusBadRequest, resp)
+			return
+		}
 	}
 
 	donationProgram := &models.DonationProgram{}
