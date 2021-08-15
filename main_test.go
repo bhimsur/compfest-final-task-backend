@@ -19,8 +19,8 @@ func TestMain(m *testing.M) {
 		log.Fatal("Error loading .env file")
 	}
 	app.Initialize(
-		"database",
-		5432,
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_DB"),
 		os.Getenv("POSTGRES_PASSWORD"))
