@@ -17,10 +17,10 @@ type App struct {
 	DB     *gorm.DB
 }
 
-func (a *App) Initialize(DbHost string, DbPort int, DbUser, DbName, DbPassword string) {
+func (a *App) Initialize(DbHost, DbPort, DbUser, DbName, DbPassword string) {
 	var err error
 
-	DBURI := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
+	DBURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
 
 	a.DB, err = gorm.Open("postgres", DBURI)
 	if err != nil {

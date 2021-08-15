@@ -13,8 +13,8 @@ func main() {
 	// }
 	app := controllers.App{}
 	app.Initialize(
-		"database",
-		5432,
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_DB"),
 		os.Getenv("POSTGRES_PASSWORD"))
