@@ -19,11 +19,11 @@ func TestMain(m *testing.M) {
 		log.Fatal("Error loading .env file")
 	}
 	app.Initialize(
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PASSWORD"))
+		"database",
+		5432,
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_PASSWORD"))
 	code := m.Run()
 	os.Exit(code)
 }
