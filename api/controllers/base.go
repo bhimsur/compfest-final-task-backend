@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"restgo/api/middlewares"
 	"restgo/api/models"
 	"restgo/api/responses"
@@ -17,17 +18,15 @@ type App struct {
 	DB     *gorm.DB
 }
 
-func (a *App) Initialize(DbHost, DbPort, DbUser, DbName, DbPassword string) {
+func (a *App) Initialize() {
 	var err error
 
-	DBURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
-
-	a.DB, err = gorm.Open("postgres", DBURI)
+	a.DB, err = gorm.Open("postgres", os.Getenv("HEROKU_DB_URI"))
 	if err != nil {
-		fmt.Printf("\n Cannot connect to database %s", DbName)
+		fmt.Printf("\n Cannot connect to database")
 		log.Fatal("This is the error:", err)
 	} else {
-		fmt.Printf("We are connected to the databse %s", DbName)
+		fmt.Printf("We are connected to the databse")
 	}
 
 	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{})
@@ -60,8 +59,15 @@ func (a *App) initializeRoutes() {
 }
 
 func (a *App) RunServer() {
-	log.Printf("\nServer starting on port 5000")
-	log.Fatal(http.ListenAndServe(":5000", a.Router))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	log.Printf("\nServer starting on port " + port)
+	err := http.ListenAndServe(":"+port, a.Router)
+	if err != nil {
+		fmt.Print(err)
+	}
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

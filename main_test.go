@@ -18,12 +18,7 @@ func TestMain(m *testing.M) {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	app.Initialize(
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_DB"),
-		os.Getenv("POSTGRES_PASSWORD"))
+	app.Initialize()
 	code := m.Run()
 	os.Exit(code)
 }
