@@ -9,6 +9,7 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -63,8 +64,11 @@ func (a *App) RunServer() {
 	if port == "" {
 		port = "5000"
 	}
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, a.Router)
+	err := http.ListenAndServe(":"+port, handlers.CORS(originsOk, headersOk, methodsOk)(a.Router))
 	if err != nil {
 		fmt.Print(err)
 	}
