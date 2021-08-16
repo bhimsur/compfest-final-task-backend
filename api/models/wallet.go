@@ -36,3 +36,21 @@ func (w *Wallet) UpdateWalletFromTopUpByUserId(user_id int, amount float64, db *
 	}
 	return w, nil
 }
+
+func UpdateWalletByUserId(user_id int, amount float64, db *gorm.DB) (*Wallet, error) {
+	w, err := GetWalletByUserId(user_id,db)
+	if err != nil {
+		return &Wallet{}, errors.New("wallet not found")
+	}
+	if w.Amount+amount < 0 {
+		return &Wallet{}, errors.New("wallet amount not enough")
+	}
+
+	w.Amount += amount
+	if err := db.Debug().Table("wallets").Where("user_id = ?", user_id).Updates(Wallet{
+		Amount: w.Amount,
+	}).Error; err != nil {
+		return &Wallet{}, err
+	}
+	return &w, nil
+}

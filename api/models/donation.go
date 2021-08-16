@@ -19,6 +19,16 @@ func GetDonationHistoryFromUser(user_id int, db *gorm.DB) (*[]Donation, error) {
 }
 
 func (d *Donation) SaveDonation(db *gorm.DB) (*Donation, error) {
+	w, err := UpdateWalletByUserId(d.UserID,-d.Amount,db)
+	if err != nil {
+		return &Donation{}, err
+	}
+
+	d, err := UpdateDonationProgramById(d.DonationProgramID,d.Amount,db)
+	if err != nil {
+		return &Donation{}, err
+	}
+
 	if err := db.Debug().Create(&d).Error; err != nil {
 		return &Donation{}, err
 	}

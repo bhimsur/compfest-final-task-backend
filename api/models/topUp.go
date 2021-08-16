@@ -23,6 +23,11 @@ func (t *TopUp) Validate() error {
 }
 
 func (t *TopUp) CreateTopUp(db *gorm.DB) (*TopUp, error) {
+	w, err := UpdateWalletByUserId(t.UserID,t.Amount,db)
+	if err != nil {
+		return &TopUp, err
+	}
+	
 	if err := db.Debug().Create(&t).Error; err != nil {
 		return &TopUp{}, err
 	}

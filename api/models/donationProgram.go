@@ -68,6 +68,21 @@ func GetDonationProgramById(id int, db *gorm.DB) (*DonationProgram, error) {
 	return donationProgram, nil
 }
 
+func UpdateDonationProgramById(id int, amount float64 db *gorm.DB) (*DonationProgram, error) {
+	d, err := GetDonationProgramById(id,db)
+	if err != nil {
+		return &DonationProgramID, errors.New("donation_program not found")
+	}
+	
+	d.Amount += amount
+	if err := db.Debug().Table("donation_programs").Where("id = ?", id).Updates(DonationProgram{
+		Amount: d.Amount,	
+	}).Error; err != nil {
+		return &DonationProgram{}, err
+	}
+	return &d, nil
+}
+
 func (d *DonationProgram) UpdateDonationProgram(id int, db *gorm.DB) (*DonationProgram, error) {
 	if err := db.Debug().Table("donation_programs").Where("id = ?", id).Updates(DonationProgram{
 		Title:  d.Title,
