@@ -69,7 +69,8 @@ func corsHandler(h http.Handler) http.HandlerFunc {
 			w.Header().Add("Connection", "keep-alive")
 			w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+			w.Header().Add("Access-Control-Allow-Credentials", "true")
 		} else {
 			h.ServeHTTP(w, r)
 		}
