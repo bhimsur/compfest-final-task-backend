@@ -69,7 +69,7 @@ func (a *App) RunServer() {
 		port = "5000"
 	}
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
-	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
+	originsOk := handlers.AllowedOrigins([]string{"pentapeduli.hexalogi.cyou", "localhost:3000"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	log.Printf("\nServer starting on port " + port)
 	err := http.ListenAndServe(":"+port, handlers.CORS(originsOk, headersOk, methodsOk)(a.Router))
