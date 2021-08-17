@@ -8,6 +8,7 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -69,7 +70,7 @@ func (a *App) initializeRoutes() {
 
 func (a *App) RunServer() {
 	log.Printf("\nServer starting on port 5000")
-	log.Fatal(http.ListenAndServe(":5000", a.Router))
+	log.Fatal(http.ListenAndServe(":5000", handlers.CORS()(a.Router)))
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
