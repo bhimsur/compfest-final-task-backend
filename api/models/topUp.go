@@ -16,9 +16,6 @@ func (t *TopUp) Validate() error {
 	if t.Amount < 0 {
 		return errors.New("amount is invalid")
 	}
-	if t.UserID < 0 {
-		return errors.New("user_id is invalid")
-	}
 	return nil
 }
 
