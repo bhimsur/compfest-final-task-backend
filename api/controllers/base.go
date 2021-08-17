@@ -69,7 +69,7 @@ func (a *App) RunServer() {
 		port = "5000"
 	}
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"https://pentapeduli.hexalogi.cyou", "http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5500"},
+		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
 	})
 	log.Printf("\nServer starting on port " + port)
