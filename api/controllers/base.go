@@ -47,6 +47,7 @@ func (a *App) initializeRoutes() {
 	s.Use(middlewares.AuthJwtVerify)
 	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
@@ -57,6 +58,7 @@ func (a *App) initializeRoutes() {
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
+	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST")
 }
 
 func (a *App) RunServer() {
