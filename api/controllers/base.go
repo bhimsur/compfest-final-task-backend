@@ -9,9 +9,9 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/cors"
 )
 
 type App struct {
@@ -68,11 +68,12 @@ func (a *App) RunServer() {
 	if port == "" {
 		port = "5000"
 	}
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
-	originsOk := handlers.AllowedOrigins([]string{"pentapeduli.hexalogi.cyou", "localhost:3000"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"https://pentapeduli.hexalogi.cyou", "http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5500"},
+		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+	})
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, handlers.CORS(originsOk, headersOk, methodsOk)(a.Router))
+	err := http.ListenAndServe(":"+port, c.Handler(a.Router))
 	if err != nil {
 		fmt.Print(err)
 	}
