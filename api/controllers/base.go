@@ -55,10 +55,12 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/user/verify/{id:[0-9]+}", a.VerifyFundraiser).Methods("PUT")
 	s.HandleFunc("/user/donate/history", a.GetDonationHistoryFromUser).Methods("GET")
 	s.HandleFunc("/user", a.GetUserById).Methods("GET")
+	s.HandleFunc("/user", a.UpdateUser).Methods("PUT")
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
 	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST")
+	s.HandleFunc("/wallet/history", a.GetTopUpHistoryByUserId).Methods("GET")
 }
 
 func (a *App) RunServer() {

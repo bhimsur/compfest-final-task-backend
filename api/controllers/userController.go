@@ -52,9 +52,19 @@ func (a *App) UserSignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
+	} else {
+		wallet := models.Wallet{}
+		wallet.UserID = userCreated.ID
+		_, err := wallet.InitWallet(a.DB)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		} else {
+			resp["user"] = userCreated
+			responses.JSON(w, http.StatusCreated, resp)
+			return
+		}
 	}
-	resp["user"] = userCreated
-	responses.JSON(w, http.StatusCreated, resp)
 }
 
 func (a *App) Login(w http.ResponseWriter, r *http.Request) {
