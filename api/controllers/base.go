@@ -67,7 +67,8 @@ func corsHandler(h http.Handler) http.HandlerFunc {
 		if r.Method == "OPTIONS" {
 			log.Print("preflight detected: ", r.Header)
 			w.Header().Add("Connection", "keep-alive")
-			w.Header().Set("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou, http://localhost:3000, http://127.0.0.1:3000")
+			w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
+			w.Header().Add("Access-Control-Allow-Origin", "http://localhost:3000")
 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
 		} else {
