@@ -62,19 +62,19 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/wallet/history", a.GetTopUpHistoryByUserId).Methods("GET")
 }
 
-// func corsHandler(h http.Handler) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		if r.Method == "OPTIONS" {
-// 			log.Print("preflight detected: ", r.Header)
-// 			w.Header().Add("Connection", "keep-alive")
-// 			w.Header().Add("Access-Control-Allow-Origin", "*")
-// 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-// 			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
-// 		} else {
-// 			h.ServeHTTP(w, r)
-// 		}
-// 	}
-// }
+func corsHandler(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			log.Print("preflight detected: ", r.Header)
+			w.Header().Add("Connection", "keep-alive")
+			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	}
+}
 
 func (a *App) RunServer() {
 	port := os.Getenv("PORT")
@@ -86,7 +86,7 @@ func (a *App) RunServer() {
 	// 	AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
 	// })
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, a.Router)
+	err := http.ListenAndServe(":"+port, corsHandler(a.Router))
 	if err != nil {
 		fmt.Print(err)
 	}

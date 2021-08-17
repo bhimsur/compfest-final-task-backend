@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"restgo/api/responses"
@@ -11,19 +10,10 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func SetContentTypeMiddleware(next http.Handler) http.HandlerFunc {
+func SetContentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// w.Header().Set("Content-Type", "application/json")
-		// next.ServeHTTP(w, r)
-		if r.Method == "OPTIONS" {
-			log.Print("preflight detected: ", r.Header)
-			w.Header().Add("Connection", "keep-alive")
-			w.Header().Add("Access-Control-Allow-Origin", "*")
-			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
-		} else {
-			next.ServeHTTP(w, r)
-		}
+		w.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
 	})
 }
 
