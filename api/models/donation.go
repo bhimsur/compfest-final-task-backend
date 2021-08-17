@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
+)
 
 type Donation struct {
 	gorm.Model
@@ -23,4 +27,13 @@ func (d *Donation) SaveDonation(db *gorm.DB) (*Donation, error) {
 		return &Donation{}, err
 	}
 	return d, nil
+}
+
+func (d *Donation) Validate() error {
+
+	if d.Amount < 0 {
+		return errors.New("amount is invalid")
+	}
+
+	return nil
 }

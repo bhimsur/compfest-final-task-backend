@@ -156,3 +156,11 @@ func (u *User) UpdateUser(id int, db *gorm.DB) (*User, error) {
 	}
 	return u, nil
 }
+
+func GetUnverifiedUser(db *gorm.DB) (*[]User, error) {
+	users := []User{}
+	if err := db.Debug().Table("users").Where("status = ?", "pending").Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return &users, nil
+}

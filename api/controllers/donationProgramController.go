@@ -16,8 +16,9 @@ func (a *App) CreateDonationProgram(w http.ResponseWriter, r *http.Request) {
 
 	userId := r.Context().Value("UserID").(float64)
 	userStatus := r.Context().Value("Status").(string)
+	userRole := r.Context().Value("Role").(string)
 
-	if userStatus != "verified" {
+	if userStatus != "verified" || userRole != "fundraiser" {
 		resp["status"] = false
 		resp["message"] = "Only verified fundraiser can create donation program"
 		responses.JSON(w, http.StatusBadRequest, resp)
@@ -142,4 +143,29 @@ func (a *App) VerifyDonationProgram(w http.ResponseWriter, r *http.Request) {
 	} else {
 		responses.JSON(w, http.StatusOK, resp)
 	}
+}
+
+func (a *App) GetUnverifiedDonationProgram(w http.ResponseWriter, r *http.Request) {
+	var resp = map[string]interface{}{"status": true, "message": "Donation Program successfully retrieved"}
+
+	userRole := r.Context().Value("Role").(string)
+
+	if userRole != "admin" {
+		resp["status"] = false
+		resp["message"] = "You don't have authorities"
+		responses.JSON(w, http.StatusBadRequest, resp)
+		return
+	}
+
+	dp, err := models.GetUnverifiedDonationProgram(a.DB)
+
+	if err != nil {
+		resp["data"] = make([]string, 0)
+		responses.JSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp["data"] = dp
+	responses.JSON(w, http.StatusOK, resp)
+	return
 }

@@ -23,15 +23,24 @@ func (w *Wallet) Validate() error {
 func GetWalletByUserId(user_id int, db *gorm.DB) (*Wallet, error) {
 	wallet := &Wallet{}
 	if err := db.Debug().Preload("User").Table("wallets").Where("user_id = ?", user_id).First(wallet).Error; err != nil {
-		return nil, err
+		wallet = &Wallet{Amount: 0, UserID: uint(user_id)}
+		wallet, _ = wallet.CreateWallet(db)
 	}
 	return wallet, nil
 }
 
-func (w *Wallet) UpdateWalletFromTopUpByUserId(user_id int, amount float64, db *gorm.DB) (*Wallet, error) {
-	if err := db.Debug().Table("wallets").Where("user_id = ?", user_id).Updates(Wallet{
-		Amount: amount,
+func (w *Wallet) UpdateWallet(db *gorm.DB) (*Wallet, error) {
+	if err := db.Debug().Table("wallets").Where("id = ?", w.ID).Updates(Wallet{
+		Amount: w.Amount,
 	}).Error; err != nil {
+		return &Wallet{}, err
+	}
+	return w, nil
+}
+
+func (w *Wallet) CreateWallet(db *gorm.DB) (*Wallet, error) {
+	err := db.Debug().Create(&w).Error
+	if err != nil {
 		return &Wallet{}, err
 	}
 	return w, nil
