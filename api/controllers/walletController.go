@@ -16,7 +16,7 @@ func (a *App) GetWalletByUserId(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	} else {
-		resp["data"] = wallet
+		resp["data"] = wallet.Amount
 		responses.JSON(w, http.StatusOK, resp)
 		return
 	}

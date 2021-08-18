@@ -21,14 +21,9 @@ func (a *App) GetDonationHistoryFromUser(w http.ResponseWriter, r *http.Request)
 		responses.ERROR(w, http.StatusInternalServerError, err)
 		return
 	} else {
-		if len(*donationHistories) == 0 {
-			responses.ERROR(w, http.StatusBadRequest, err)
-			return
-		} else {
-			resp["data"] = donationHistories
-			responses.JSON(w, http.StatusOK, resp)
-			return
-		}
+		resp["data"] = donationHistories
+		responses.JSON(w, http.StatusOK, resp)
+		return
 	}
 }
 

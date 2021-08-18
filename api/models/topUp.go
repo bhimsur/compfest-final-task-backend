@@ -33,9 +33,9 @@ func (t *TopUp) CreateTopUp(db *gorm.DB) (*TopUp, error) {
 	return t, nil
 }
 
-func (t *TopUp) TopupHistory(user_id int, db *gorm.DB) (*[]TopUp, error) {
-	topups := []TopUp{}
-	if err := db.Debug().Table("top_ups").Where("user_id = ?", user_id).Find(&topups).Error; err != nil {
+func (t *TopUp) TopupHistory(user_id int, db *gorm.DB) (*[]TopUpAPI, error) {
+	topups := []TopUpAPI{}
+	if err := db.Debug().Select("Amount").Table("top_ups").Where("user_id = ?", user_id).Find(&topups).Error; err != nil {
 		return nil, err
 	}
 	return &topups, nil
