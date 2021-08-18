@@ -35,3 +35,12 @@ func (d *Donation) SaveDonation(db *gorm.DB) (*Donation, error) {
 	}
 	return d, nil
 }
+
+func (d *Donation) Validate() error {
+
+	if d.Amount < 0 {
+		return errors.New("amount is invalid")
+	}
+
+	return nil
+}

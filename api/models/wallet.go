@@ -30,23 +30,14 @@ func (w *Wallet) InitWallet(db *gorm.DB) (*Wallet, error) {
 func GetWalletByUserId(user_id int, db *gorm.DB) (*Wallet, error) {
 	wallet := &Wallet{}
 	if err := db.Debug().Preload("User").Table("wallets").Where("user_id = ?", user_id).First(wallet).Error; err != nil {
-		return nil, err
+		wallet = &Wallet{Amount: 0, UserID: uint(user_id)}
+		wallet, _ = wallet.CreateWallet(db)
 	}
 	return wallet, nil
 }
 
-func (w *Wallet) UpdateWalletFromTopUpByUserId(user_id int, amount float64, db *gorm.DB) (*Wallet, error) {
-	w, err := GetWalletByUserId(user_id, db)
-
-	if err != nil {
-		return nil, err
-	} else if w.Amount+amount < 0 {
-		return &Wallet{}, errors.New("Wallet amount is not enough")
-	}
-
-	w.Amount += amount
-
-	if err := db.Debug().Table("wallets").Where("user_id = ?", user_id).Updates(Wallet{
+func (w *Wallet) UpdateWallet(db *gorm.DB) (*Wallet, error) {
+	if err := db.Debug().Table("wallets").Where("id = ?", w.ID).Updates(Wallet{
 		Amount: w.Amount,
 	}).Error; err != nil {
 		return &Wallet{}, err
@@ -54,15 +45,9 @@ func (w *Wallet) UpdateWalletFromTopUpByUserId(user_id int, amount float64, db *
 	return w, nil
 }
 
-func (w *Wallet) UpdateWalletById(user_id int, amount float64, db *gorm.DB) (*Wallet, error) {
-	w, err := GetWalletByUserId(user_id, db)
+func (w *Wallet) CreateWallet(db *gorm.DB) (*Wallet, error) {
+	err := db.Debug().Create(&w).Error
 	if err != nil {
-		return nil, err
-	}
-	w.Amount -= amount
-	if err := db.Debug().Table("wallets").Where("user_id = ?", user_id).Updates(Wallet{
-		Amount: w.Amount,
-	}).Error; err != nil {
 		return &Wallet{}, err
 	}
 	return w, nil
