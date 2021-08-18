@@ -84,7 +84,7 @@ func (a *App) RunServer() {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Authorization", "Content-Type", "X-Requested-With"}
+		AllowedHeaders: []string{"Authorization", "Content-Type", "X-Requested-With"},
 		AllowCredentials: true,
 	})
 	log.Printf("\nServer starting on port " + port)
