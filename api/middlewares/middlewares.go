@@ -18,12 +18,13 @@ func SetResponsesMiddleware(next http.Handler) http.Handler {
 			w.Header().Set("Access-Control-Allow-Headers", "Authorization, X-Requested-With, Content-Type")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Content-Type", "application/json")
+		} else {
+			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080, http://localhost:3000, https://pentapeduli.hexalogi.cyou/")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Authorization, X-Requested-With, Content-Type")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Content-Type", "application/json")
 		}
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080, http://localhost:3000, https://pentapeduli.hexalogi.cyou/")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Authorization, X-Requested-With, Content-Type")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
 }
