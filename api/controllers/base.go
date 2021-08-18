@@ -48,7 +48,6 @@ func (a *App) initializeRoutes() {
 	s.Use(middlewares.AuthJwtVerify)
 	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
 	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
@@ -92,13 +91,13 @@ func (a *App) RunServer() {
 		port = "5000"
 	}
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Authorization", "Content-Type", "X-Requested-With"},
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type", "X-Requested-With"},
 		AllowCredentials: true,
 	})
 	log.Printf("\nServer starting on port " + port)
-  err := http.ListenAndServe(":"+port, handlers.CORS()(c.Handler(a.Router)))
+	err := http.ListenAndServe(":"+port, handlers.CORS()(c.Handler(a.Router)))
 	if err != nil {
 		fmt.Print(err)
 	}
