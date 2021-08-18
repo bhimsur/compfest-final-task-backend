@@ -64,7 +64,7 @@ func (a *App) initializeRoutes() {
 
 	s.HandleFunc("/withdraw/unverified", a.GetUnverifiedWithdrawal).Methods("GET")
 	s.HandleFunc("/user", a.GetUserById).Methods("GET")
-	s.HandleFunc("/user", a.UpdateUser).Methods("PUT
+	s.HandleFunc("/user", a.UpdateUser).Methods("PUT")
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
