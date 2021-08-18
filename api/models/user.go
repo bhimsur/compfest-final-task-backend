@@ -37,6 +37,13 @@ type User struct {
 	Status   Status `gorm:"type:Status; default:'pending'" json:"status,omitempty"`
 }
 
+type UserDetail struct {
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+	Status Status `json:"status"`
+	Role   Roles  `json:"role"`
+}
+
 // hash password from user input
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
@@ -126,8 +133,8 @@ func GetAllUsers(db *gorm.DB) (*[]User, error) {
 
 }
 
-func GetUserById(id int, db *gorm.DB) (*User, error) {
-	user := &User{}
+func GetUserById(id int, db *gorm.DB) (*UserDetail, error) {
+	user := &UserDetail{}
 	if err := db.Debug().Table("users").Where("id = ?", id).First(user).Error; err != nil {
 		return nil, err
 	}

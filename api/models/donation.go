@@ -14,6 +14,13 @@ type Donation struct {
 	DonationProgramID uint            `json:"donation_program_id"`
 }
 
+func (d *Donation) Validate() error {
+	if d.Amount <= 0 {
+		return errors.New("amount is invalid")
+	}
+	return nil
+}
+
 func GetDonationHistoryFromUser(user_id int, db *gorm.DB) (*[]Donation, error) {
 	donations := []Donation{}
 	if err := db.Debug().Preload("DonationProgram").Table("donations").Where("user_id = ?", user_id).Find(&donations).Error; err != nil {

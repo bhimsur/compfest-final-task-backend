@@ -56,9 +56,19 @@ func (a *App) UserSignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
+	} else {
+		wallet := models.Wallet{}
+		wallet.UserID = userCreated.ID
+		_, err := wallet.InitWallet(a.DB)
+		if err != nil {
+			responses.ERROR(w, http.StatusBadRequest, err)
+			return
+		} else {
+			resp["user"] = userCreated
+			responses.JSON(w, http.StatusCreated, resp)
+			return
+		}
 	}
-	resp["user"] = userCreated
-	responses.JSON(w, http.StatusCreated, resp)
 }
 
 func (a *App) Login(w http.ResponseWriter, r *http.Request) {
@@ -125,15 +135,14 @@ func (a *App) VerifyFundraiser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := models.GetUserById(userId, a.DB)
 
-	if user.Status == "verified" {
-		resp["message"] = "Fundraiser already verified"
-		responses.JSON(w, http.StatusBadRequest, resp)
-		return
-	}
 	if userRole != "admin" {
 		resp["status"] = false
 		resp["message"] = "Only admin can verify fundraiser"
 		responses.JSON(w, http.StatusUnauthorized, resp)
+		return
+	} else if user.Status == "verified" {
+		resp["message"] = "Fundraiser already verified"
+		responses.JSON(w, http.StatusBadRequest, resp)
 		return
 	}
 

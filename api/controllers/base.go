@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"restgo/api/middlewares"
 	"restgo/api/models"
 	"restgo/api/responses"
@@ -18,17 +19,15 @@ type App struct {
 	DB     *gorm.DB
 }
 
-func (a *App) Initialize(DbHost, DbPort, DbUser, DbName, DbPassword string) {
+func (a *App) Initialize() {
 	var err error
 
-	DBURI := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
-
-	a.DB, err = gorm.Open("postgres", DBURI)
+	a.DB, err = gorm.Open("postgres", os.Getenv("HEROKU_DB_URI"))
 	if err != nil {
-		fmt.Printf("\n Cannot connect to database %s", DbName)
+		fmt.Printf("\n Cannot connect to database")
 		log.Fatal("This is the error:", err)
 	} else {
-		fmt.Printf("We are connected to the databse %s", DbName)
+		fmt.Printf("We are connected to the databse")
 	}
 
 	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{}, &models.Withdrawal{})
@@ -40,13 +39,15 @@ func (a *App) Initialize(DbHost, DbPort, DbUser, DbName, DbPassword string) {
 func (a *App) initializeRoutes() {
 	a.Router.Use(middlewares.SetContentTypeMiddleware)
 	a.Router.HandleFunc("/", home).Methods("GET")
-	a.Router.HandleFunc("/register", a.UserSignUp).Methods("POST")
-	a.Router.HandleFunc("/login", a.Login).Methods("POST")
+	u := a.Router.PathPrefix("/auth").Subrouter()
+	u.HandleFunc("/register", a.UserSignUp).Methods("POST")
+	u.HandleFunc("/login", a.Login).Methods("POST")
 
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
 	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
 	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
@@ -61,6 +62,8 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/withdraw/{id:[0-9]+}", a.CreateWithdrawal).Methods("POST")
 
 	s.HandleFunc("/withdraw/unverified", a.GetUnverifiedWithdrawal).Methods("GET")
+	s.HandleFunc("/user", a.GetUserById).Methods("GET")
+	s.HandleFunc("/user", a.UpdateUser).Methods("PUT
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
@@ -68,9 +71,36 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/wallet/history", a.TopupHistory).Methods("GET")
 }
 
+// func corsHandler(h http.Handler) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		if (r.Method == "POST" || r.Method == "OPTIONS") {
+// 			log.Print("preflight detected: ", r.Header)
+// 			w.Header().Add("Connection", "keep-alive")
+// 			w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
+// 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+// 			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With")
+// 			w.Header().Add("Access-Control-Allow-Credentials", "true")
+// 		}
+// 		h.ServeHTTP(w, r)
+// 	}
+// }
+
 func (a *App) RunServer() {
-	log.Printf("\nServer starting on port 5000")
-	log.Fatal(http.ListenAndServe(":5000", handlers.CORS()(a.Router)))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Authorization", "Content-Type", "X-Requested-With"}
+		AllowCredentials: true,
+	})
+	log.Printf("\nServer starting on port " + port)
+  err := http.ListenAndServe(":"+port, handlers.CORS()(c.Handler(a.Router)))
+	if err != nil {
+		fmt.Print(err)
+	}
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

@@ -8,7 +8,7 @@ import (
 
 type Wallet struct {
 	gorm.Model
-	Amount float64 `json:"amount"`
+	Amount float64 `gorm:"default:0" json:"amount"`
 	User   User    `gorm:"foreignKey:UserID" json:"user"`
 	UserID uint    `json:"user_id"`
 }
@@ -18,6 +18,13 @@ func (w *Wallet) Validate() error {
 		return errors.New("amount is invalid")
 	}
 	return nil
+}
+
+func (w *Wallet) InitWallet(db *gorm.DB) (*Wallet, error) {
+	if err := db.Debug().Create(&w).Error; err != nil {
+		return &Wallet{}, err
+	}
+	return w, nil
 }
 
 func GetWalletByUserId(user_id int, db *gorm.DB) (*Wallet, error) {

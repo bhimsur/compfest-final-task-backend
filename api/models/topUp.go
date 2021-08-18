@@ -2,22 +2,26 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
 
 type TopUp struct {
+	gorm.Model
 	Amount float64 `json:"amount"`
 	User   User    `gorm:"foreignKey:UserID" json:"user"`
 	UserID uint    `json:"user_id"`
 }
 
+type TopUpAPI struct {
+	Amount    float64   `json:"amount"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 func (t *TopUp) Validate() error {
 	if t.Amount < 0 {
 		return errors.New("amount is invalid")
-	}
-	if t.UserID < 0 {
-		return errors.New("user_id is invalid")
 	}
 	return nil
 }
