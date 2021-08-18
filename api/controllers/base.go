@@ -64,16 +64,15 @@ func (a *App) initializeRoutes() {
 
 func corsHandler(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if (r.Method == "POST" || r.Method == "OPTIONS" ||  r.Method == "PUT" ||  r.Method == "DELETE") {
-		log.Print("preflight detected: ", r.Header)
-		w.Header().Add("Connection", "keep-alive")
-		w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
-		w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type")
-		w.Header().Add("Access-Control-Allow-Credentials", "true")
-		} else {
-			h.ServeHTTP(w, r)
+		if (r.Method == "POST" || r.Method == "OPTIONS") {
+			log.Print("preflight detected: ", r.Header)
+			w.Header().Add("Connection", "keep-alive")
+			w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
+			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With")
+			w.Header().Add("Access-Control-Allow-Credentials", "true")
 		}
+		h.ServeHTTP(w, r)
 	}
 }
 
