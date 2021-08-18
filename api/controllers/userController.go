@@ -48,6 +48,10 @@ func (a *App) UserSignUp(w http.ResponseWriter, r *http.Request) {
 		user.Status = "verified"
 	}
 
+	if user.Role == "fundraiser" {
+		user.Status = "pending"
+	}
+
 	userCreated, err := user.SaveUser(a.DB)
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
@@ -201,4 +205,29 @@ func (a *App) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		responses.JSON(w, http.StatusOK, resp)
 		return
 	}
+}
+
+func (a *App) GetUnverifiedUser(w http.ResponseWriter, r *http.Request) {
+	var resp = map[string]interface{}{"status": true, "message": "User successfully retrieved"}
+
+	userRole := r.Context().Value("Role").(string)
+
+	if userRole != "admin" {
+		resp["status"] = false
+		resp["message"] = "You don't have authorities"
+		responses.JSON(w, http.StatusBadRequest, resp)
+		return
+	}
+
+	u, err := models.GetUnverifiedUser(a.DB)
+
+	if err != nil {
+		resp["data"] = make([]string, 0)
+		responses.JSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp["data"] = u
+	responses.JSON(w, http.StatusOK, resp)
+	return
 }
