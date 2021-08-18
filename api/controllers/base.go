@@ -9,6 +9,7 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -29,7 +30,7 @@ func (a *App) Initialize() {
 		fmt.Printf("We are connected to the databse")
 	}
 
-	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{})
+	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{}, &models.Withdrawal{})
 
 	a.Router = mux.NewRouter().StrictSlash(true)
 	a.initializeRoutes()
@@ -48,11 +49,19 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
 	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
+	s.HandleFunc("/donate/unverified", a.GetUnverifiedDonationProgram).Methods("GET")
 
 	s.HandleFunc("/user/verify/{id:[0-9]+}", a.VerifyFundraiser).Methods("PUT")
 	s.HandleFunc("/user/donate/history", a.GetDonationHistoryFromUser).Methods("GET")
+	s.HandleFunc("/user/unverified", a.GetUnverifiedUser).Methods("GET")
+
+	s.HandleFunc("/withdraw/verify/{id:[0-9]+}", a.VerifyWithdrawal).Methods("PUT")
+	s.HandleFunc("/withdraw/{id:[0-9]+}", a.CreateWithdrawal).Methods("POST")
+
+	s.HandleFunc("/withdraw/unverified", a.GetUnverifiedWithdrawal).Methods("GET")
 	s.HandleFunc("/user", a.GetUserById).Methods("GET")
 	s.HandleFunc("/user", a.UpdateUser).Methods("PUT")
 
@@ -67,6 +76,7 @@ func (a *App) RunServer() {
 	if port == "" {
 		port = "5000"
 	}
+
 	log.Printf("\nServer starting on port " + port)
 	err := http.ListenAndServe(":"+port, a.Router)
 	if err != nil {

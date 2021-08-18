@@ -1,10 +1,8 @@
 package main
 
 import (
-	"log"
 	"restgo/api/controllers"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 

@@ -9,7 +9,7 @@ import (
 )
 
 func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
-	var resp = map[string]interface{}{"status": true, "message": "success"}
+	var resp = map[string]interface{}{"status": true, "message": "successs"}
 	user := r.Context().Value("UserID").(float64)
 	userId := int(user)
 
@@ -32,12 +32,19 @@ func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
 
 	topUp.UserID = uint(userId)
 	topUpCreated, err := topUp.CreateTopUp(a.DB)
+
+	walletUpdate, err := models.GetWalletByUserId(userId, a.DB)
+	walletUpdate.Amount += topUp.Amount
+
+	_, err = walletUpdate.UpdateWallet(a.DB)
+
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	} else {
-		wallet := models.Wallet{}
-		_, err := wallet.UpdateWalletFromTopUpByUserId(userId, topUp.Amount, a.DB)
+		wallet, err := models.GetWalletByUserId(userId, a.DB)
+		wallet.Amount = topUp.Amount
+		_, err = wallet.UpdateWallet(a.DB)
 		if err != nil {
 			responses.ERROR(w, http.StatusBadRequest, err)
 			return
@@ -49,17 +56,21 @@ func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) GetTopUpHistoryByUserId(w http.ResponseWriter, r *http.Request) {
-	var resp = map[string]interface{}{"status": true, "message": "success"}
-	userId := r.Context().Value("UserID").(float64)
+func (a *App) TopupHistory(w http.ResponseWriter, r *http.Request) {
+	var resp = map[string]interface{}{"status": true, "message": "successs"}
+	user := r.Context().Value("UserID").(float64)
+	userId := int(user)
 
-	topUps, err := models.GetTopUpHistoryByUserId(int(userId), a.DB)
+	topUp := &models.TopUp{}
+
+	topups, err := topUp.TopupHistory(userId, a.DB)
+
 	if err != nil {
-		responses.ERROR(w, http.StatusInternalServerError, err)
+		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	} else {
-		resp["data"] = topUps
-		responses.JSON(w, http.StatusOK, resp)
+		resp["data"] = topups
+		responses.JSON(w, http.StatusCreated, resp)
 		return
 	}
 }
