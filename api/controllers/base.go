@@ -11,7 +11,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"github.com/rs/cors"
 )
 
 type App struct {
@@ -37,17 +36,17 @@ func (a *App) Initialize() {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.Use(middlewares.SetContentTypeMiddleware)
+	a.Router.Use(middlewares.SetResponsesMiddleware)
 	a.Router.HandleFunc("/", home).Methods("GET")
 	u := a.Router.PathPrefix("/auth").Subrouter()
-	u.HandleFunc("/register", a.UserSignUp).Methods("POST")
-	u.HandleFunc("/login", a.Login).Methods("POST")
+	u.HandleFunc("/register", a.UserSignUp).Methods("POST", "OPTIONS")
+	u.HandleFunc("/login", a.Login).Methods("POST", "OPTIONS")
 
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
 	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
-	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST")
+	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST", "OPTIONS")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
@@ -59,7 +58,7 @@ func (a *App) initializeRoutes() {
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
-	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST")
+	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST", "OPTIONS")
 	s.HandleFunc("/wallet/history", a.GetTopUpHistoryByUserId).Methods("GET")
 }
 
@@ -68,12 +67,8 @@ func (a *App) RunServer() {
 	if port == "" {
 		port = "5000"
 	}
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
-	})
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, c.Handler(a.Router))
+	err := http.ListenAndServe(":"+port, a.Router)
 	if err != nil {
 		fmt.Print(err)
 	}
