@@ -9,7 +9,6 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -68,7 +67,7 @@ func (a *App) initializeRoutes() {
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
 	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST", "OPTIONS")
-	s.HandleFunc("/wallet/history", a.GetTopUpHistoryByUserId).Methods("GET")
+	s.HandleFunc("/wallet/history", a.TopupHistory).Methods("GET")
 }
 
 func (a *App) RunServer() {
