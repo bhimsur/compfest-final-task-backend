@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -12,6 +13,7 @@ type DonationProgram struct {
 	Title    string     `json:"title"`
 	Detail   string     `json:"detail"`
 	Amount   float64    `json:"amount"`
+	Deadline time.Time  `json:"deadline"`
 	User     User       `gorm:"foreignKey:UserID" json:"user"`
 	UserID   uint       `json:"user_id"`
 	Status   Status     `gorm:"type:Status; default:'pending'" json:"status"`

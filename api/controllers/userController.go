@@ -231,3 +231,58 @@ func (a *App) GetUnverifiedUser(w http.ResponseWriter, r *http.Request) {
 	responses.JSON(w, http.StatusOK, resp)
 	return
 }
+
+type PasswordField struct {
+	CurrentPassword string `json:"currentPassword"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
+}
+
+func (a *App) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	var resp = map[string]interface{}{"status": true, "message": "Password Changed Successfully"}
+	user := r.Context().Value("UserID").(float64)
+	userID := int(user)
+
+	current, _ := models.GetUserByID(userID, a.DB)
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	passwordBody := &PasswordField{}
+
+	err = json.Unmarshal(body, &passwordBody)
+	if err != nil {
+		responses.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+
+	err = models.CheckPasswordHash(passwordBody.CurrentPassword, current.Password)
+
+	if err != nil {
+		resp["status"] = false
+		resp["message"] = "Wrong Password"
+		responses.JSON(w, http.StatusBadRequest, resp)
+		return
+	}
+
+	if passwordBody.ConfirmPassword != passwordBody.Password {
+		resp["status"] = false
+		resp["message"] = "Password and Confirm Password must same"
+		responses.JSON(w, http.StatusBadRequest, resp)
+		return
+	}
+
+	userUpdate := models.User{Password: passwordBody.Password}
+	_, err = userUpdate.ChangePassword(userID, a.DB)
+
+	if err != nil {
+		resp["message"] = "Failed To Change Password"
+		responses.JSON(w, http.StatusBadRequest, err)
+		return
+	}
+
+	responses.JSON(w, http.StatusOK, resp)
+}
