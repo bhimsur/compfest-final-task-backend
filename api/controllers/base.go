@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"github.com/rs/cors"
 )
 
 type App struct {
@@ -26,7 +27,7 @@ func (a *App) Initialize() {
 		fmt.Printf("\n Cannot connect to database")
 		log.Fatal("This is the error:", err)
 	} else {
-		fmt.Printf("We are connected to the databse")
+		fmt.Printf("We are connected to the database")
 	}
 
 	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{}, &models.Withdrawal{})
@@ -36,7 +37,8 @@ func (a *App) Initialize() {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.Use(middlewares.SetResponsesMiddleware)
+	a.Router.Methods("OPTIONS")
+
 	a.Router.HandleFunc("/", home).Methods("GET")
 	u := a.Router.PathPrefix("/auth").Subrouter()
 	u.HandleFunc("/register", a.UserSignUp).Methods("POST", "OPTIONS")
@@ -77,7 +79,19 @@ func (a *App) RunServer() {
 	}
 
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, a.Router)
+
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "https://pentapeduli.hexalogi.cyou"},
+		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "PUT"},
+		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Authorization"},
+		AllowCredentials: true,
+		Debug:            true,
+	})
+
+	handler := corsMiddleware.Handler(a.Router)
+
+	err := http.ListenAndServe(":"+port, handler)
+
 	if err != nil {
 		fmt.Print(err)
 	}
