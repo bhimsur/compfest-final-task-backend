@@ -141,6 +141,14 @@ func GetUserById(id int, db *gorm.DB) (*UserDetail, error) {
 	return user, nil
 }
 
+func GetUserByID(id int, db *gorm.DB) (*User, error) {
+	user := &User{}
+	if err := db.Debug().Table("users").Where("id = ?", id).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (u *User) VerifyFundraiser(id int, db *gorm.DB) (*User, error) {
 	if err := db.Debug().Table("users").Where("id = ?", id).Updates(User{
 		Status: "verified",
@@ -151,12 +159,28 @@ func (u *User) VerifyFundraiser(id int, db *gorm.DB) (*User, error) {
 }
 
 func (u *User) UpdateUser(id int, db *gorm.DB) (*User, error) {
-	password := strings.TrimSpace(u.Password)
-	hashedPassword, _ := HashPassword(password)
-	u.Password = string(hashedPassword)
+	u.Password = hashPassword(u.Password)
 	if err := db.Debug().Table("users").Where("id = ?", id).Updates(User{
 		Email:    u.Email,
 		Name:     u.Name,
+		Password: u.Password,
+	}).Error; err != nil {
+		return &User{}, err
+	}
+	return u, nil
+}
+
+func (u *User) GetUserById(db *gorm.DB) (*UserDetail, error) {
+	user := &UserDetail{}
+	if err := db.Debug().Table("users").Where("id = ?", u.ID).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *User) ChangePassword(user_id int, db *gorm.DB) (*User, error) {
+	u.Password = hashPassword(u.Password)
+	if err := db.Debug().Table("users").Where("id = ?", user_id).Updates(User{
 		Password: u.Password,
 	}).Error; err != nil {
 		return &User{}, err
@@ -170,4 +194,17 @@ func GetUnverifiedUser(db *gorm.DB) (*[]User, error) {
 		return nil, err
 	}
 	return &users, nil
+}
+
+func GetName(user_id uint, db *gorm.DB) string {
+	var name string
+	db.Debug().Table("users").Select("name").Where("id = ?", user_id).Row().Scan(&name)
+	return name
+}
+
+func hashPassword(pw string) string {
+	password := strings.TrimSpace(pw)
+	hashedPassword, _ := HashPassword(password)
+	pw = string(hashedPassword)
+	return pw
 }

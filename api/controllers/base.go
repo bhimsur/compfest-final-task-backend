@@ -65,11 +65,12 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/withdraw/unverified", a.GetUnverifiedWithdrawal).Methods("GET")
 	s.HandleFunc("/user", a.GetUserById).Methods("GET")
 	s.HandleFunc("/user", a.UpdateUser).Methods("PUT")
+	s.HandleFunc("/user/change-password", a.ChangePassword).Methods("PUT")
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
 	s.HandleFunc("/wallet", a.CreateTopUp).Methods("POST")
-	s.HandleFunc("/wallet/history", a.TopupHistory).Methods("GET")
+	s.HandleFunc("/wallet/history", a.WalletHistory).Methods("GET")
 }
 
 // func corsHandler(h http.Handler) http.HandlerFunc {

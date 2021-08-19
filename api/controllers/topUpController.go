@@ -47,22 +47,3 @@ func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-func (a *App) TopupHistory(w http.ResponseWriter, r *http.Request) {
-	var resp = map[string]interface{}{"status": true, "message": "successs"}
-	user := r.Context().Value("UserID").(float64)
-	userId := int(user)
-
-	topUp := &models.TopUp{}
-
-	topups, err := topUp.TopupHistory(userId, a.DB)
-
-	if err != nil {
-		responses.ERROR(w, http.StatusBadRequest, err)
-		return
-	} else {
-		resp["data"] = topups
-		responses.JSON(w, http.StatusCreated, resp)
-		return
-	}
-}
