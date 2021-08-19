@@ -51,12 +51,13 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
-	s.HandleFunc("/donate/history", a.GetDonationProgramByFundraiser).Methods("GET")
+	s.HandleFunc("/donate/program", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
 	s.HandleFunc("/donate/unverified", a.GetUnverifiedDonationProgram).Methods("GET")
+	s.HandleFunc("/donate/search", a.SearchDonationProgram).Methods("GET")
 
 	s.HandleFunc("/user/verify/{id:[0-9]+}", a.VerifyFundraiser).Methods("PUT")
-	s.HandleFunc("/user/donate/history", a.GetDonationHistoryFromUser).Methods("GET")
+	s.HandleFunc("/donation/history", a.GetDonationHistoryFromUser).Methods("GET")
 	s.HandleFunc("/user/unverified", a.GetUnverifiedUser).Methods("GET")
 
 	s.HandleFunc("/withdraw/verify/{id:[0-9]+}", a.VerifyWithdrawal).Methods("PUT")

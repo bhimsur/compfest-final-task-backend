@@ -42,17 +42,9 @@ func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
 	} else {
-		wallet, err := models.GetWalletByUserId(userId, a.DB)
-		wallet.Amount = topUp.Amount
-		_, err = wallet.UpdateWallet(a.DB)
-		if err != nil {
-			responses.ERROR(w, http.StatusBadRequest, err)
-			return
-		} else {
-			resp["data"] = topUpCreated
-			responses.JSON(w, http.StatusCreated, resp)
-			return
-		}
+		resp["data"] = topUpCreated
+		responses.JSON(w, http.StatusCreated, resp)
+		return
 	}
 }
 

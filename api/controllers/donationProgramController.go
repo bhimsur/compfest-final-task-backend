@@ -166,12 +166,31 @@ func (a *App) GetUnverifiedDonationProgram(w http.ResponseWriter, r *http.Reques
 	dp, err := models.GetUnverifiedDonationProgram(a.DB)
 
 	if err != nil {
-		resp["data"] = make([]string, 0)
+		// resp["data"] = make([]string, 0)
+		resp["data"] = err
 		responses.JSON(w, http.StatusOK, resp)
 		return
 	}
 
 	resp["data"] = dp
+	responses.JSON(w, http.StatusOK, resp)
+	return
+}
+
+func (a *App) SearchDonationProgram(w http.ResponseWriter, r *http.Request) {
+	var resp = map[string]interface{}{"status": true, "message": "Donation Program successfully retrieved"}
+
+	keyword := r.URL.Query().Get("keyword")
+
+	donationPrograms, err := models.SearchDonationProgram(keyword, a.DB)
+
+	if err != nil {
+		resp["data"] = make([]string, 0)
+		responses.JSON(w, http.StatusOK, resp)
+		return
+	}
+
+	resp["data"] = donationPrograms
 	responses.JSON(w, http.StatusOK, resp)
 	return
 }
