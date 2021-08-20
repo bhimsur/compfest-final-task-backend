@@ -18,13 +18,14 @@ type Withdrawal struct {
 }
 
 type WithdrawalModel struct {
-	ID        uint      `json:"ID"`
-	Amount    float64   `json:"amount"`
-	Title     string    `json:"title"`
-	UserID    uint      `json:"user_id"`
-	Name      string    `json:"name"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+	ID                uint      `json:"ID"`
+	Amount            float64   `json:"amount"`
+	DonationProgramID uint      `json:"donation_program_id"`
+	Title             string    `json:"title"`
+	UserID            uint      `json:"user_id"`
+	Name              string    `json:"name"`
+	Status            string    `json:"status"`
+	CreatedAt         time.Time `json:"created_at"`
 }
 
 func (w *Withdrawal) CreateWithdrawal(db *gorm.DB) (*Withdrawal, error) {
