@@ -44,17 +44,19 @@ func (a *App) initializeRoutes() {
 	u.HandleFunc("/register", a.UserSignUp).Methods("POST", "OPTIONS")
 	u.HandleFunc("/login", a.Login).Methods("POST", "OPTIONS")
 
+	g := a.Router.PathPrefix("/api").Subrouter()
+	g.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
+	g.HandleFunc("/donate/search", a.SearchDonationProgram).Methods("GET")
+	g.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
+
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
-	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
 	s.HandleFunc("/donate/program", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
 	s.HandleFunc("/donate/unverified", a.GetUnverifiedDonationProgram).Methods("GET")
-	s.HandleFunc("/donate/search", a.SearchDonationProgram).Methods("GET")
 
 	s.HandleFunc("/user/verify/{id:[0-9]+}", a.VerifyFundraiser).Methods("PUT")
 	s.HandleFunc("/donation/history", a.GetDonationHistoryFromUser).Methods("GET")
