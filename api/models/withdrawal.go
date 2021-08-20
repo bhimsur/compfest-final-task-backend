@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -14,6 +15,16 @@ type Withdrawal struct {
 	User              User            `gorm:"foreignKey:UserID" json:"user"`
 	UserID            uint            `json:"user_id"`
 	Status            Status          `gorm:"type:Status; default:'pending'" json:"status,omitempty"`
+}
+
+type WithdrawalModel struct {
+	ID        uint      `json:"ID"`
+	Amount    float64   `json:"amount"`
+	Title     string    `json:"title"`
+	UserID    uint      `json:"user_id"`
+	Name      string    `json:"name"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func (w *Withdrawal) CreateWithdrawal(db *gorm.DB) (*Withdrawal, error) {
@@ -50,9 +61,12 @@ func (w *Withdrawal) VerifyWithdrawal(id int, db *gorm.DB) (*Withdrawal, error) 
 	return w, nil
 }
 
-func GetUnverifiedWithdrawal(db *gorm.DB) (*[]Withdrawal, error) {
-	withdrawals := []Withdrawal{}
-	if err := db.Debug().Table("withdrawals").Where("status = ?", "pending").Find(&withdrawals).Error; err != nil {
+func GetUnverifiedWithdrawal(db *gorm.DB) (*[]WithdrawalModel, error) {
+	withdrawals := []WithdrawalModel{}
+	if err := db.Debug().Table("withdrawals").Select("withdrawals.*, u.name AS name, dp.title AS title").
+		Where("withdrawals.status = ?", "pending").
+		Joins("LEFT JOIN users u ON withdrawals.user_id = u.id").
+		Joins("LEFT JOIN donation_programs dp ON dp.id = withdrawals.donation_program_id").Find(&withdrawals).Error; err != nil {
 		return nil, err
 	}
 	return &withdrawals, nil
