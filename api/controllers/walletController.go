@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"restgo/api/models"
 	"restgo/api/responses"
-	"restgo/api/utils"
 	"sort"
+	"time"
 )
 
 func (a *App) GetWalletByUserId(w http.ResponseWriter, r *http.Request) {
@@ -25,9 +25,9 @@ func (a *App) GetWalletByUserId(w http.ResponseWriter, r *http.Request) {
 }
 
 type _WalletHistory struct {
-	Date   string  `json:"date"`
-	Amount float64 `json:"amount"`
-	Action string  `json:"action"`
+	Date   time.Time `json:"date"`
+	Amount float64   `json:"amount"`
+	Action string    `json:"action"`
 }
 
 func (a *App) WalletHistory(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func (a *App) WalletHistory(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range *topups {
 		wallet := _WalletHistory{
-			Date:   utils.RFCToDate(v.CreatedAt),
+			Date:   v.CreatedAt,
 			Amount: v.Amount,
 			Action: "topup",
 		}
@@ -51,7 +51,7 @@ func (a *App) WalletHistory(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range *donates {
 		wallet := _WalletHistory{
-			Date:   utils.RFCToDate(v.CreatedAt),
+			Date:   v.CreatedAt,
 			Amount: v.Amount,
 			Action: "donate",
 		}
@@ -59,13 +59,8 @@ func (a *App) WalletHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sort.Slice(_walletHistory, func(i, j int) bool {
-		return _walletHistory[i].Date > _walletHistory[j].Date
+		return _walletHistory[i].Date.After(_walletHistory[j].Date)
 	})
-
-	// _walletSorted := []_WalletHistory{}
-	// sort.Slice(_walletSorted, func(i, j int) bool {
-	// 	return _walletSorted[i].Date.Before(_walletSorted[j].Date)
-	// })
 
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)

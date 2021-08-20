@@ -8,6 +8,7 @@ import (
 	"restgo/api/responses"
 	"restgo/api/utils"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -18,7 +19,7 @@ type _DonationProgram struct {
 	Title          string        `json:"title"`
 	Detail         string        `json:"detail"`
 	Amount         float64       `json:"amount"`
-	Deadline       string        `json:"deadline"`
+	Deadline       time.Time     `json:"deadline"`
 	UserID         uint          `json:"user_id"`
 	FundraiserName string        `json:"fundraiser_name"`
 	Status         models.Status `json:"status"`
@@ -105,7 +106,7 @@ type _DonationProgramDetail struct {
 	Title          string        `json:"title"`
 	Detail         string        `json:"detail"`
 	Amount         float64       `json:"amount"`
-	Deadline       string        `json:"deadline"`
+	Deadline       time.Time     `json:"deadline"`
 	UserID         uint          `json:"user_id"`
 	FundraiserName string        `json:"fundraiser_name"`
 	Status         models.Status `json:"status"`
@@ -131,7 +132,7 @@ func (a *App) GetDonationProgramById(w http.ResponseWriter, r *http.Request) {
 		Detail:         donationProgram.Detail,
 		Amount:         donationProgram.Amount,
 		FundraiserName: models.GetName(donationProgram.UserID, a.DB),
-		Deadline:       utils.RFCToDate(donationProgram.Deadline),
+		Deadline:       donationProgram.Deadline,
 		UserID:         donationProgram.UserID,
 		Status:         donationProgram.Status,
 		Withdrawn:      donationProgram.GetWithdrawedAmount(a.DB),
@@ -280,7 +281,7 @@ func convertToDetail(donationPrograms *[]models.DonationProgram, db *gorm.DB) *[
 			Detail:         elem.Detail,
 			Amount:         elem.Amount,
 			FundraiserName: models.GetName(elem.UserID, db),
-			Deadline:       utils.RFCToDate(elem.Deadline),
+			Deadline:       elem.Deadline,
 			UserID:         elem.UserID,
 			Status:         elem.Status,
 			Withdrawn:      elem.GetWithdrawedAmount(db),
