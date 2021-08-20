@@ -14,15 +14,16 @@ import (
 )
 
 type _DonationProgram struct {
-	ID        uint          `json:"id"`
-	Title     string        `json:"title"`
-	Detail    string        `json:"detail"`
-	Amount    float64       `json:"amount"`
-	Deadline  string        `json:"deadline"`
-	UserID    uint          `json:"user_id"`
-	Status    models.Status `json:"status"`
-	Withdrawn float64       `json:"withdrawn"`
-	Collected float64       `json:"collected"`
+	ID             uint          `json:"id"`
+	Title          string        `json:"title"`
+	Detail         string        `json:"detail"`
+	Amount         float64       `json:"amount"`
+	Deadline       string        `json:"deadline"`
+	UserID         uint          `json:"user_id"`
+	FundraiserName string        `json:"fundraiser_name"`
+	Status         models.Status `json:"status"`
+	Withdrawn      float64       `json:"withdrawn"`
+	Collected      float64       `json:"collected"`
 }
 
 type _ProgramInput struct {
@@ -100,16 +101,17 @@ func (a *App) GetDonationPrograms(w http.ResponseWriter, r *http.Request) {
 }
 
 type _DonationProgramDetail struct {
-	ID        uint          `json:"id"`
-	Title     string        `json:"title"`
-	Detail    string        `json:"detail"`
-	Amount    float64       `json:"amount"`
-	Deadline  string        `json:"deadline"`
-	UserID    uint          `json:"user_id"`
-	Status    models.Status `json:"status"`
-	Withdrawn float64       `json:"withdrawn"`
-	Collected float64       `json:"collected"`
-	Donation  []_Donation   `json:"Donation"`
+	ID             uint          `json:"id"`
+	Title          string        `json:"title"`
+	Detail         string        `json:"detail"`
+	Amount         float64       `json:"amount"`
+	Deadline       string        `json:"deadline"`
+	UserID         uint          `json:"user_id"`
+	FundraiserName string        `json:"fundraiser_name"`
+	Status         models.Status `json:"status"`
+	Withdrawn      float64       `json:"withdrawn"`
+	Collected      float64       `json:"collected"`
+	Donation       []_Donation   `json:"Donation"`
 }
 
 type _Donation struct {
@@ -124,16 +126,17 @@ func (a *App) GetDonationProgramById(w http.ResponseWriter, r *http.Request) {
 	donationProgram, err := models.GetDonationProgramById(id, a.DB)
 
 	detail := _DonationProgramDetail{
-		ID:        donationProgram.ID,
-		Title:     donationProgram.Title,
-		Detail:    donationProgram.Detail,
-		Amount:    donationProgram.Amount,
-		Deadline:  utils.RFCToDate(donationProgram.Deadline),
-		UserID:    donationProgram.UserID,
-		Status:    donationProgram.Status,
-		Withdrawn: donationProgram.GetWithdrawedAmount(a.DB),
-		Collected: donationProgram.GetAvailableAmount(a.DB),
-		Donation:  *convertDonation(&donationProgram.Donation, a.DB),
+		ID:             donationProgram.ID,
+		Title:          donationProgram.Title,
+		Detail:         donationProgram.Detail,
+		Amount:         donationProgram.Amount,
+		FundraiserName: models.GetName(donationProgram.UserID, a.DB),
+		Deadline:       utils.RFCToDate(donationProgram.Deadline),
+		UserID:         donationProgram.UserID,
+		Status:         donationProgram.Status,
+		Withdrawn:      donationProgram.GetWithdrawedAmount(a.DB),
+		Collected:      donationProgram.GetAvailableAmount(a.DB),
+		Donation:       *convertDonation(&donationProgram.Donation, a.DB),
 	}
 
 	if err != nil {
@@ -272,15 +275,16 @@ func convertToDetail(donationPrograms *[]models.DonationProgram, db *gorm.DB) *[
 	donationDetails := []_DonationProgram{}
 	for _, elem := range *donationPrograms {
 		detail := _DonationProgram{
-			ID:        elem.ID,
-			Title:     elem.Title,
-			Detail:    elem.Detail,
-			Amount:    elem.Amount,
-			Deadline:  utils.RFCToDate(elem.Deadline),
-			UserID:    elem.UserID,
-			Status:    elem.Status,
-			Withdrawn: elem.GetWithdrawedAmount(db),
-			Collected: elem.GetAvailableAmount(db),
+			ID:             elem.ID,
+			Title:          elem.Title,
+			Detail:         elem.Detail,
+			Amount:         elem.Amount,
+			FundraiserName: models.GetName(elem.UserID, db),
+			Deadline:       utils.RFCToDate(elem.Deadline),
+			UserID:         elem.UserID,
+			Status:         elem.Status,
+			Withdrawn:      elem.GetWithdrawedAmount(db),
+			Collected:      elem.GetAvailableAmount(db),
 		}
 		donationDetails = append(donationDetails, detail)
 	}
