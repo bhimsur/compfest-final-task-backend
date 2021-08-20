@@ -52,8 +52,7 @@ func (a *App) initializeRoutes() {
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
 	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST", "OPTIONS")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/program", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
 	s.HandleFunc("/donate/unverified", a.GetUnverifiedDonationProgram).Methods("GET")
@@ -69,6 +68,8 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/user", a.GetUserById).Methods("GET")
 	s.HandleFunc("/user", a.UpdateUser).Methods("PUT")
 	s.HandleFunc("/user/change-password", a.ChangePassword).Methods("PUT")
+
+	s.HandleFunc("/admin/unverified", a.UnverifiedList).Methods("GET")
 
 	//wallet
 	s.HandleFunc("/wallet", a.GetWalletByUserId).Methods("GET")
