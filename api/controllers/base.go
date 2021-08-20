@@ -9,7 +9,6 @@ import (
 	"restgo/api/models"
 	"restgo/api/responses"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/rs/cors"
@@ -28,7 +27,7 @@ func (a *App) Initialize() {
 		fmt.Printf("\n Cannot connect to database")
 		log.Fatal("This is the error:", err)
 	} else {
-		fmt.Printf("We are connected to the databse")
+		fmt.Printf("We are connected to the database")
 	}
 
 	a.DB.Debug().AutoMigrate(&models.User{}, &models.DonationProgram{}, &models.Donation{}, &models.Wallet{}, &models.TopUp{}, &models.Withdrawal{})
@@ -38,22 +37,26 @@ func (a *App) Initialize() {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.Use(middlewares.SetContentTypeMiddleware)
+	a.Router.Methods("OPTIONS")
+
 	a.Router.HandleFunc("/", home).Methods("GET")
 	u := a.Router.PathPrefix("/auth").Subrouter()
-	u.HandleFunc("/register", a.UserSignUp).Methods("POST")
-	u.HandleFunc("/login", a.Login).Methods("POST")
+	u.HandleFunc("/register", a.UserSignUp).Methods("POST", "OPTIONS")
+	u.HandleFunc("/login", a.Login).Methods("POST", "OPTIONS")
+
+	g := a.Router.PathPrefix("/api").Subrouter()
+	g.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
+	g.HandleFunc("/donate/search", a.SearchDonationProgram).Methods("GET")
+	g.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
 
 	s := a.Router.PathPrefix("/api").Subrouter()
 	s.Use(middlewares.AuthJwtVerify)
-	s.HandleFunc("/donate", a.GetDonationPrograms).Methods("GET")
-	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST")
-	s.HandleFunc("/donate/{id:[0-9]+}", a.GetDonationProgramById).Methods("GET")
+	s.HandleFunc("/donate", a.CreateDonationProgram).Methods("POST", "OPTIONS")
+	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateNow).Methods("POST", "OPTIONS")
 	s.HandleFunc("/donate/{id:[0-9]+}", a.DonateToProgram).Methods("POST")
 	s.HandleFunc("/donate/program", a.GetDonationProgramByFundraiser).Methods("GET")
 	s.HandleFunc("/donate/verify/{id:[0-9]+}", a.VerifyDonationProgram).Methods("PUT")
 	s.HandleFunc("/donate/unverified", a.GetUnverifiedDonationProgram).Methods("GET")
-	s.HandleFunc("/donate/search", a.SearchDonationProgram).Methods("GET")
 
 	s.HandleFunc("/user/verify/{id:[0-9]+}", a.VerifyFundraiser).Methods("PUT")
 	s.HandleFunc("/donation/history", a.GetDonationHistoryFromUser).Methods("GET")
@@ -73,33 +76,26 @@ func (a *App) initializeRoutes() {
 	s.HandleFunc("/wallet/history", a.WalletHistory).Methods("GET")
 }
 
-// func corsHandler(h http.Handler) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		if (r.Method == "POST" || r.Method == "OPTIONS") {
-// 			log.Print("preflight detected: ", r.Header)
-// 			w.Header().Add("Connection", "keep-alive")
-// 			w.Header().Add("Access-Control-Allow-Origin", "https://pentapeduli.hexalogi.cyou")
-// 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-// 			w.Header().Add("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With")
-// 			w.Header().Add("Access-Control-Allow-Credentials", "true")
-// 		}
-// 		h.ServeHTTP(w, r)
-// 	}
-// }
-
 func (a *App) RunServer() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
 	}
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Authorization", "Content-Type", "X-Requested-With"},
-		AllowCredentials: true,
-	})
+
 	log.Printf("\nServer starting on port " + port)
-	err := http.ListenAndServe(":"+port, handlers.CORS()(c.Handler(a.Router)))
+
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000", "https://pentapeduli.hexalogi.cyou"},
+		AllowedMethods:   []string{"OPTIONS", "GET", "POST", "PUT"},
+		AllowedHeaders:   []string{"Content-Type", "X-Requested-With", "Authorization"},
+		AllowCredentials: true,
+		Debug:            true,
+	})
+
+	handler := corsMiddleware.Handler(a.Router)
+
+	err := http.ListenAndServe(":"+port, handler)
+
 	if err != nil {
 		fmt.Print(err)
 	}
