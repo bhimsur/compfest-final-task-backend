@@ -87,7 +87,7 @@ func (a *App) DonateNow(w http.ResponseWriter, r *http.Request) {
 			responses.ERROR(w, http.StatusBadRequest, err)
 			return
 		} else {
-			userWallet.Amount = donation.Amount
+			userWallet.Amount -= donation.Amount
 			_, err := userWallet.UpdateWallet(a.DB)
 			if err != nil {
 				responses.ERROR(w, http.StatusBadRequest, err)
