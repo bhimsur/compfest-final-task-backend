@@ -10,9 +10,14 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-func SetContentTypeMiddleware(next http.Handler) http.Handler {
+func SetResponsesMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		if r.Method == "OPTIONS" {
+			w.Write([]byte("allowed"))
+			return
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
