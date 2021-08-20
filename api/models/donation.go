@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"errors"
+
+	"github.com/jinzhu/gorm"
+)
 
 type Donation struct {
 	gorm.Model
@@ -8,6 +12,13 @@ type Donation struct {
 	UserID            uint            `json:"user_id"`
 	DonationProgram   DonationProgram `gorm:"foreignKey:DonationProgramID" json:"donation_program"`
 	DonationProgramID uint            `json:"donation_program_id"`
+}
+
+func (d *Donation) Validate() error {
+	if d.Amount <= 0 {
+		return errors.New("amount is invalid")
+	}
+	return nil
 }
 
 func GetDonationHistoryFromUser(user_id int, db *gorm.DB) (*[]Donation, error) {
@@ -19,16 +30,6 @@ func GetDonationHistoryFromUser(user_id int, db *gorm.DB) (*[]Donation, error) {
 }
 
 func (d *Donation) SaveDonation(db *gorm.DB) (*Donation, error) {
-	w, err := UpdateWalletByUserId(d.UserID,-d.Amount,db)
-	if err != nil {
-		return &Donation{}, err
-	}
-
-	d, err := UpdateDonationProgramById(d.DonationProgramID,d.Amount,db)
-	if err != nil {
-		return &Donation{}, err
-	}
-
 	if err := db.Debug().Create(&d).Error; err != nil {
 		return &Donation{}, err
 	}
