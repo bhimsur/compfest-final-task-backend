@@ -143,8 +143,9 @@ func GetUnverifiedDonationProgram(db *gorm.DB) (*[]DonationProgram, error) {
 }
 
 func SearchDonationProgram(keyword string, db *gorm.DB) (*[]DonationProgram, error) {
+	keyword = strings.ToLower(keyword)
 	donationPrograms := []DonationProgram{}
-	if err := db.Debug().Table("donation_programs").Where("status = ?", "verified").Where("title LIKE ?", "%"+keyword+"%").Find(&donationPrograms).Error; err != nil {
+	if err := db.Debug().Table("donation_programs").Where("status = ?", "verified").Where("LOWER(title) LIKE ?", "%"+keyword+"%").Find(&donationPrograms).Error; err != nil {
 		return nil, err
 	}
 	return &donationPrograms, nil

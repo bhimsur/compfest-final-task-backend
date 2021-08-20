@@ -38,6 +38,7 @@ type User struct {
 }
 
 type UserDetail struct {
+	ID     uint   `json:"id"`
 	Email  string `json:"email"`
 	Name   string `json:"name"`
 	Status Status `json:"status"`
