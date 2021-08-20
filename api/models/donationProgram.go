@@ -20,6 +20,17 @@ type DonationProgram struct {
 	Donation []Donation `gorm:"foreignKey:DonationProgramID;references:ID" json:"donations"`
 }
 
+type DonationProgramModel struct {
+	ID        uint      `json:"ID"`
+	Title     string    `json:"title"`
+	Amount    float64   `json:"amount"`
+	Deadline  time.Time `json:"deadline"`
+	UserID    uint      `json:"user_id"`
+	Status    Status    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+}
+
 func (d *DonationProgram) Prepare() {
 	d.Title = strings.TrimSpace(d.Title)
 	d.Detail = strings.TrimSpace(d.Detail)
@@ -134,9 +145,10 @@ func (dp *DonationProgram) GetAvailableAmount(db *gorm.DB) float64 {
 	return amount
 }
 
-func GetUnverifiedDonationProgram(db *gorm.DB) (*[]DonationProgram, error) {
-	donationPrograms := []DonationProgram{}
-	if err := db.Debug().Table("donation_programs").Where("status = ?", "pending").Find(&donationPrograms).Error; err != nil {
+func GetUnverifiedDonationProgram(db *gorm.DB) (*[]DonationProgramModel, error) {
+	donationPrograms := []DonationProgramModel{}
+	if err := db.Debug().Table("donation_programs").Select("donation_programs.*, u.name AS name").
+		Where("donation_programs.status = ?", "pending").Joins("LEFT JOIN users u ON donation_programs.user_id = u.id").Find(&donationPrograms).Error; err != nil {
 		return nil, err
 	}
 	return &donationPrograms, nil
