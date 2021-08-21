@@ -37,6 +37,14 @@ type User struct {
 	Status   Status `gorm:"type:Status; default:'pending'" json:"status,omitempty"`
 }
 
+type UserDetail struct {
+	ID     uint   `json:"id"`
+	Email  string `json:"email"`
+	Name   string `json:"name"`
+	Status Status `json:"status"`
+	Role   Roles  `json:"role"`
+}
+
 // hash password from user input
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 10)
@@ -126,7 +134,15 @@ func GetAllUsers(db *gorm.DB) (*[]User, error) {
 
 }
 
-func GetUserById(id int, db *gorm.DB) (*User, error) {
+func GetUserById(id int, db *gorm.DB) (*UserDetail, error) {
+	user := &UserDetail{}
+	if err := db.Debug().Table("users").Where("id = ?", id).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func GetUserByID(id int, db *gorm.DB) (*User, error) {
 	user := &User{}
 	if err := db.Debug().Table("users").Where("id = ?", id).First(user).Error; err != nil {
 		return nil, err
@@ -144,9 +160,7 @@ func (u *User) VerifyFundraiser(id int, db *gorm.DB) (*User, error) {
 }
 
 func (u *User) UpdateUser(id int, db *gorm.DB) (*User, error) {
-	password := strings.TrimSpace(u.Password)
-	hashedPassword, _ := HashPassword(password)
-	u.Password = string(hashedPassword)
+	u.Password = hashPassword(u.Password)
 	if err := db.Debug().Table("users").Where("id = ?", id).Updates(User{
 		Email:    u.Email,
 		Name:     u.Name,
@@ -155,4 +169,43 @@ func (u *User) UpdateUser(id int, db *gorm.DB) (*User, error) {
 		return &User{}, err
 	}
 	return u, nil
+}
+
+func (u *User) GetUserById(db *gorm.DB) (*UserDetail, error) {
+	user := &UserDetail{}
+	if err := db.Debug().Table("users").Where("id = ?", u.ID).First(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *User) ChangePassword(user_id int, db *gorm.DB) (*User, error) {
+	u.Password = hashPassword(u.Password)
+	if err := db.Debug().Table("users").Where("id = ?", user_id).Updates(User{
+		Password: u.Password,
+	}).Error; err != nil {
+		return &User{}, err
+	}
+	return u, nil
+}
+
+func GetUnverifiedUser(db *gorm.DB) (*[]User, error) {
+	users := []User{}
+	if err := db.Debug().Table("users").Where("status = ?", "pending").Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return &users, nil
+}
+
+func GetName(user_id uint, db *gorm.DB) string {
+	var name string
+	db.Debug().Table("users").Select("name").Where("id = ?", user_id).Row().Scan(&name)
+	return name
+}
+
+func hashPassword(pw string) string {
+	password := strings.TrimSpace(pw)
+	hashedPassword, _ := HashPassword(password)
+	pw = string(hashedPassword)
+	return pw
 }

@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
 )
@@ -12,10 +13,22 @@ type DonationProgram struct {
 	Title    string     `json:"title"`
 	Detail   string     `json:"detail"`
 	Amount   float64    `json:"amount"`
+	Deadline time.Time  `json:"deadline"`
 	User     User       `gorm:"foreignKey:UserID" json:"user"`
 	UserID   uint       `json:"user_id"`
-	Status   Status     `gorm:"type:Status; default:'unverified'" json:"status"`
+	Status   Status     `gorm:"type:Status; default:'pending'" json:"status"`
 	Donation []Donation `gorm:"foreignKey:DonationProgramID;references:ID" json:"donations"`
+}
+
+type DonationProgramModel struct {
+	ID        uint      `json:"ID"`
+	Title     string    `json:"title"`
+	Amount    float64   `json:"amount"`
+	Deadline  time.Time `json:"deadline"`
+	UserID    uint      `json:"user_id"`
+	Status    Status    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
 }
 
 func (d *DonationProgram) Prepare() {
@@ -52,6 +65,7 @@ func GetDonationPrograms(db *gorm.DB) (*[]DonationProgram, error) {
 		Preload("User").
 		Preload("Donation").
 		Select("dp.*, SUM(d.amount) AS donasi_terkumpul, (dp.amount-SUM(d.amount)) AS donasi_kekurangan").
+		Where("status = ?", "verified").
 		Joins("LEFT OUTER JOIN donations d ON d.donation_program_id = dp.id").
 		Group("dp.id").
 		Find(&donationProgram).Error; err != nil {
@@ -66,6 +80,20 @@ func GetDonationProgramById(id int, db *gorm.DB) (*DonationProgram, error) {
 		return nil, err
 	}
 	return donationProgram, nil
+}
+
+func (d *DonationProgram) UpdateDonationProgramAmountById(id int, amount float64, db *gorm.DB) (*DonationProgram, error) {
+	d, err := GetDonationProgramById(id, db)
+	if err != nil {
+		return nil, err
+	}
+
+	d.Amount += amount
+
+	if err := db.Debug().Table("donation_programs").Where("id = ?", id).Updates(DonationProgram{Amount: d.Amount}).Error; err != nil {
+		return &DonationProgram{}, err
+	}
+	return d, nil
 }
 
 func (d *DonationProgram) UpdateDonationProgram(id int, db *gorm.DB) (*DonationProgram, error) {
@@ -103,4 +131,34 @@ func (dp *DonationProgram) VerifyDonationProgram(id int, db *gorm.DB) (*Donation
 		return &DonationProgram{}, err
 	}
 	return dp, nil
+}
+
+func (dp *DonationProgram) GetWithdrawedAmount(db *gorm.DB) float64 {
+	var amount float64
+	db.Debug().Table("withdrawals w").Select("SUM(w.amount)").Where("donation_program_id = ?", dp.ID).Row().Scan(&amount)
+	return amount
+}
+
+func (dp *DonationProgram) GetAvailableAmount(db *gorm.DB) float64 {
+	var amount float64
+	db.Debug().Table("donations d").Select("SUM(d.amount)").Where("donation_program_id = ?", dp.ID).Row().Scan(&amount)
+	return amount
+}
+
+func GetUnverifiedDonationProgram(db *gorm.DB) (*[]DonationProgramModel, error) {
+	donationPrograms := []DonationProgramModel{}
+	if err := db.Debug().Table("donation_programs").Select("donation_programs.*, u.name AS name").
+		Where("donation_programs.status = ?", "pending").Joins("LEFT JOIN users u ON donation_programs.user_id = u.id").Find(&donationPrograms).Error; err != nil {
+		return nil, err
+	}
+	return &donationPrograms, nil
+}
+
+func SearchDonationProgram(keyword string, db *gorm.DB) (*[]DonationProgram, error) {
+	keyword = strings.ToLower(keyword)
+	donationPrograms := []DonationProgram{}
+	if err := db.Debug().Table("donation_programs").Where("status = ?", "verified").Where("LOWER(title) LIKE ?", "%"+keyword+"%").Find(&donationPrograms).Error; err != nil {
+		return nil, err
+	}
+	return &donationPrograms, nil
 }

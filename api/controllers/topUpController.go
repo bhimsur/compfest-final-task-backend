@@ -9,7 +9,7 @@ import (
 )
 
 func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
-	var resp = map[string]interface{}{"status": true, "message": "success"}
+	var resp = map[string]interface{}{"status": true, "message": "successs"}
 	user := r.Context().Value("UserID").(float64)
 	userId := int(user)
 
@@ -32,9 +32,12 @@ func (a *App) CreateTopUp(w http.ResponseWriter, r *http.Request) {
 
 	topUp.UserID = uint(userId)
 	topUpCreated, err := topUp.CreateTopUp(a.DB)
-	walletUpdate := models.Wallet{}
-	walletUpdate.Amount = topUp.Amount + walletUpdate.Amount
-	_, _ = walletUpdate.UpdateWalletFromTopUpByUserId(userId, walletUpdate.Amount, a.DB)
+
+	walletUpdate, err := models.GetWalletByUserId(userId, a.DB)
+	walletUpdate.Amount += topUp.Amount
+
+	_, err = walletUpdate.UpdateWallet(a.DB)
+
 	if err != nil {
 		responses.ERROR(w, http.StatusBadRequest, err)
 		return
