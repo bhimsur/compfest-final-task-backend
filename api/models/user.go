@@ -162,9 +162,7 @@ func (u *User) VerifyFundraiser(id int, db *gorm.DB) (*User, error) {
 func (u *User) UpdateUser(id int, db *gorm.DB) (*User, error) {
 	u.Password = hashPassword(u.Password)
 	if err := db.Debug().Table("users").Where("id = ?", id).Updates(User{
-		Email:    u.Email,
-		Name:     u.Name,
-		Password: u.Password,
+		Name: u.Name,
 	}).Error; err != nil {
 		return &User{}, err
 	}
