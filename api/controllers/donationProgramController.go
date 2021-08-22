@@ -28,10 +28,11 @@ type _DonationProgram struct {
 }
 
 type _ProgramInput struct {
-	Title    string  `json:"title"`
-	Detail   string  `json:"detail"`
-	Amount   float64 `json:"amount"`
-	Deadline string  `json:"deadline"`
+	Title    string        `json:"title"`
+	Detail   string        `json:"detail"`
+	Amount   float64       `json:"amount"`
+	Deadline string        `json:"deadline"`
+	Status   models.Status `json:"status"`
 }
 
 func (a *App) CreateDonationProgram(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +73,7 @@ func (a *App) CreateDonationProgram(w http.ResponseWriter, r *http.Request) {
 		Title:    _input.Title,
 		Amount:   _input.Amount,
 		Detail:   _input.Detail,
+		Status:   "pending",
 	}
 
 	donationProgram.Prepare()
